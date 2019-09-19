@@ -1,5 +1,8 @@
 FROM phpearth/php:7.3-nginx
 
+# DEV=1 => turns off caching stuff
+# SKIP_MIGRATIONS => doesnt call migrate on startup
+# WAIT_FOR_MYSQL => waits for mysql to come up
 ENV PHP_OPCACHE_VALIDATE_TIMESTAMPS="0" \
     PHP_OPCACHE_MAX_ACCELERATED_FILES="32531" \
     PHP_OPCACHE_MEMORY_CONSUMPTION="256" \
@@ -51,3 +54,12 @@ CMD ["api"]
 
 USER www-data:www-data
 RUN composer global require hirak/prestissimo
+
+# TODO:
+# - https://jtreminio.com/blog/developing-at-full-speed-with-xdebug/#nginx-map
+# - https://jtreminio.com/blog/all-in-one-php-fpm-nginx-apache-containers/
+# - https://github.com/connors511/cleanup/blob/master/cleanup
+# - https://engineering.shopify.com/blogs/engineering/docker-at-shopify-how-we-built-containers-that-power-over-100-000-online-shops
+
+# Forge inspired config?
+# https://gist.github.com/radermacher/e6eb26382c2bb054577c16bbeb2c6503#file-forge-sh-L216z

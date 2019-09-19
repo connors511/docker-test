@@ -3,4 +3,4 @@
 # exit immediately if a command exits with a non-zero status.
 set -euo pipefail
 
-php artisan horizon
+/sbin/runit-wrapper

@@ -3,35 +3,52 @@
 # exit immediately if a command exits with a non-zero status.
 set -euo pipefail
 
-# if [ -n "mysql" ]; then
-#     # wait for mysql to start
-#     while ! echo exit | nc mysql 3306 >/dev/null; do sleep 2; done
-# fi
+if [ ! -z "$WAIT_FOR_MYSQL" ] && [ -n "mysql" ]; then
+    # wait for mysql to start
+    while ! echo exit | nc mysql 3306 >/dev/null; do sleep 2; done
+fi
 
-echo "export PS1='🐳  \[\033[1;36m\]\h \[\033[1;34m\]\W\[\033[0;35m\] \[\033[1;36m\]# \[\033[0m\]'" >> $HOME/.bashrc
-echo "alias ll='ls -lh'" >> $HOME/.bashrc
-echo "alias art='php artisan'" >> $HOME/.bashrc
-echo "alias phpunit='vendor/bin/phpunit'" >> $HOME/.bashrc
-echo "alias p='phpunit'" >> $HOME/.bashrc
-echo "alias pf='phpunit --filter'" >> $HOME/.bashrc
-echo "alias pst='phpunit --stop-on-failure'" >> $HOME/.bashrc
-echo "alias paratest='vendor/bin/paratest --colors'" >> $HOME/.bashrc
+sed -i 's/?!#\(.*artisan schedule.*\)/# \1/' /etc/crontabs/www-data
 
-echo "Caching configuration and routes..."
-php artisan config:cache
-php artisan route:cache
+if [ -z "${DEV}" ] || [ "${DEV}" != "1" ]
+then
+    echo "Caching configuration and routes..."
+    php artisan config:cache
+    php artisan route:cache
+    php artisan view:cache
+    php artisan event:cache
+else
+    echo "Development mode.."
+    php artisan cache:clear
+    php artisan config:clear
+    php artisan event:clear
+    php artisan optimize:clear
+    php artisan view:clear
+    php artisan route:clear
+    echo "Ensuring composer dependencies"
+    composer install
+fi
 
-php artisan migrate --force
+if [ -z "${SKIP_MIGRATIONS}" ]
+then
+    echo "Running migrations"
+    php artisan migrate --force
+else
+    echo "Skipping migrations"
+fi
+
+echo "Publishing vendor assets"
 php artisan horizon:assets
 
-# Hack to compile opcache after webserver has startet
-if [ "$OPCACHE_VERSION" = "2" ]
-then
-    sleep 20s && php artisan opcache:optimize &
+if [ -d "${WORK_DIR}/vendor/appstract/laravel-opcache" ]; then
+    echo "Spawning child process to prime OPcache"
+    # Hack to compile opcache after webserver has startet
+    if [ "$OPCACHE_VERSION" = "2" ]; then
+        sleep 20s && php artisan opcache:optimize &
+    fi
+    if [ "$OPCACHE_VERSION" = "3" ]; then
+        sleep 20s && php artisan opcache:compile --force &
+    fi
+else
+    echo "Skipping OPcache optimization"
 fi
-if [ "$OPCACHE_VERSION" = "3" ]
-then
-    sleep 20s && php artisan opcache:compile --force &
-fi
-
-/sbin/runit-wrapper
