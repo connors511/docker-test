@@ -1,10 +1,10 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 # $0 is a script name,
 # $1, $2, $3 etc are passed arguments
 # $1 is our command
 CMD=$1
 
-echo "export PS1='🐳  \[\033[1;36m\]\h \[\033[1;34m\]\W\[\033[0;35m\] \[\033[1;36m\]# \[\033[0m\]'" >> $HOME/.bashrc
+echo "export PS1='??  \[\033[1;36m\]\h \[\033[1;34m\]\W\[\033[0;35m\] \[\033[1;36m\]# \[\033[0m\]'" >> $HOME/.bashrc
 echo "alias ll='ls -lh'" >> $HOME/.bashrc
 echo "alias art='php artisan'" >> $HOME/.bashrc
 echo "alias phpunit='vendor/bin/phpunit'" >> $HOME/.bashrc
@@ -18,7 +18,7 @@ if [ -f "/utils/${CMD}.sh" ]; then
     SKIP_MIGRATIONS=1
   fi
 
-  ./utils/init.sh
+  /utils/init.sh
   echo "Starting service: ${CMD}"
   exec /utils/${CMD}.sh
 else

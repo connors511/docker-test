@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
 # exit immediately if a command exits with a non-zero status.
-set -euo pipefail
+set -eo pipefail
 
-if [ ! -z "$WAIT_FOR_MYSQL" ] && [ -n "mysql" ]; then
+if [ ! -z "${WAIT_FOR_MYSQL}" ]; then
     # wait for mysql to start
     while ! echo exit | nc mysql 3306 >/dev/null; do sleep 2; done
 fi

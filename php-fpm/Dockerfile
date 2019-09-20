@@ -9,7 +9,8 @@ ENV PHP_OPCACHE_VALIDATE_TIMESTAMPS="0" \
     PHP_OPCACHE_MAX_WASTED_PERCENTAGE="10" \
     PHP_OPCACHE_INTERNED_STRINGS_BUFFER="16" \
     WORK_DIR="/var/www/html" \
-    OPCACHE_VERSION="2"
+    OPCACHE_VERSION="2" \
+    COMPOSER_HOME="/.composer"
 
 WORKDIR $WORK_DIR
 
@@ -44,16 +45,16 @@ RUN apk add --no-cache \
     sed -i 's/?!#\(.*artisan schedule.*\)/# \1/' /etc/crontabs/www-data && \
     chmod -R 755 /var/www && \
     chown -R www-data:www-data /var/www && \
-    rm /etc/nginx/conf.d/default.conf
+    rm /etc/nginx/conf.d/default.conf && \
+    composer global require hirak/prestissimo && \
+    chmod -R 777 ${COMPOSER_HOME} && \
+    chown -R www-data:www-data ${COMPOSER_HOME}
 
 COPY files /
 
 ENTRYPOINT ["/utils/entrypoint.sh"]
 CMD ["api"]
 
-
-USER www-data:www-data
-RUN composer global require hirak/prestissimo
 
 # TODO:
 # - https://jtreminio.com/blog/developing-at-full-speed-with-xdebug/#nginx-map
